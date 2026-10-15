@@ -10,33 +10,180 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CalculatorRouteImport } from './routes/calculator'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as FeesRouteImport } from './routes/fees'
+import { Route as HowMiningWorksRouteImport } from './routes/how-mining-works'
+import { Route as InvestmentTermsRouteImport } from './routes/investment-terms'
+import { Route as MiningOperationsRouteImport } from './routes/mining-operations'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ReferralTermsRouteImport } from './routes/referral-terms'
+import { Route as RiskDisclosureRouteImport } from './routes/risk-disclosure'
+import { Route as TermsRouteImport } from './routes/terms'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalculatorRoute = CalculatorRouteImport.update({
+  id: '/calculator',
+  path: '/calculator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeesRoute = FeesRouteImport.update({
+  id: '/fees',
+  path: '/fees',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowMiningWorksRoute = HowMiningWorksRouteImport.update({
+  id: '/how-mining-works',
+  path: '/how-mining-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvestmentTermsRoute = InvestmentTermsRouteImport.update({
+  id: '/investment-terms',
+  path: '/investment-terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MiningOperationsRoute = MiningOperationsRouteImport.update({
+  id: '/mining-operations',
+  path: '/mining-operations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReferralTermsRoute = ReferralTermsRouteImport.update({
+  id: '/referral-terms',
+  path: '/referral-terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RiskDisclosureRoute = RiskDisclosureRouteImport.update({
+  id: '/risk-disclosure',
+  path: '/risk-disclosure',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/calculator': typeof CalculatorRoute
+  '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
+  '/fees': typeof FeesRoute
+  '/how-mining-works': typeof HowMiningWorksRoute
+  '/investment-terms': typeof InvestmentTermsRoute
+  '/mining-operations': typeof MiningOperationsRoute
+  '/privacy': typeof PrivacyRoute
+  '/referral-terms': typeof ReferralTermsRoute
+  '/risk-disclosure': typeof RiskDisclosureRoute
+  '/terms': typeof TermsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calculator': typeof CalculatorRoute
+  '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
+  '/fees': typeof FeesRoute
+  '/how-mining-works': typeof HowMiningWorksRoute
+  '/investment-terms': typeof InvestmentTermsRoute
+  '/mining-operations': typeof MiningOperationsRoute
+  '/privacy': typeof PrivacyRoute
+  '/referral-terms': typeof ReferralTermsRoute
+  '/risk-disclosure': typeof RiskDisclosureRoute
+  '/terms': typeof TermsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/calculator': typeof CalculatorRoute
+  '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
+  '/fees': typeof FeesRoute
+  '/how-mining-works': typeof HowMiningWorksRoute
+  '/investment-terms': typeof InvestmentTermsRoute
+  '/mining-operations': typeof MiningOperationsRoute
+  '/privacy': typeof PrivacyRoute
+  '/referral-terms': typeof ReferralTermsRoute
+  '/risk-disclosure': typeof RiskDisclosureRoute
+  '/terms': typeof TermsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/calculator'
+    | '/contact'
+    | '/faq'
+    | '/fees'
+    | '/how-mining-works'
+    | '/investment-terms'
+    | '/mining-operations'
+    | '/privacy'
+    | '/referral-terms'
+    | '/risk-disclosure'
+    | '/terms'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/calculator'
+    | '/contact'
+    | '/faq'
+    | '/fees'
+    | '/how-mining-works'
+    | '/investment-terms'
+    | '/mining-operations'
+    | '/privacy'
+    | '/referral-terms'
+    | '/risk-disclosure'
+    | '/terms'
+  id:
+    | '__root__'
+    | '/'
+    | '/calculator'
+    | '/contact'
+    | '/faq'
+    | '/fees'
+    | '/how-mining-works'
+    | '/investment-terms'
+    | '/mining-operations'
+    | '/privacy'
+    | '/referral-terms'
+    | '/risk-disclosure'
+    | '/terms'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CalculatorRoute: typeof CalculatorRoute
+  ContactRoute: typeof ContactRoute
+  FaqRoute: typeof FaqRoute
+  FeesRoute: typeof FeesRoute
+  HowMiningWorksRoute: typeof HowMiningWorksRoute
+  InvestmentTermsRoute: typeof InvestmentTermsRoute
+  MiningOperationsRoute: typeof MiningOperationsRoute
+  PrivacyRoute: typeof PrivacyRoute
+  ReferralTermsRoute: typeof ReferralTermsRoute
+  RiskDisclosureRoute: typeof RiskDisclosureRoute
+  TermsRoute: typeof TermsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +195,99 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calculator': {
+      id: '/calculator'
+      path: '/calculator'
+      fullPath: '/calculator'
+      preLoaderRoute: typeof CalculatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fees': {
+      id: '/fees'
+      path: '/fees'
+      fullPath: '/fees'
+      preLoaderRoute: typeof FeesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-mining-works': {
+      id: '/how-mining-works'
+      path: '/how-mining-works'
+      fullPath: '/how-mining-works'
+      preLoaderRoute: typeof HowMiningWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/investment-terms': {
+      id: '/investment-terms'
+      path: '/investment-terms'
+      fullPath: '/investment-terms'
+      preLoaderRoute: typeof InvestmentTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mining-operations': {
+      id: '/mining-operations'
+      path: '/mining-operations'
+      fullPath: '/mining-operations'
+      preLoaderRoute: typeof MiningOperationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/referral-terms': {
+      id: '/referral-terms'
+      path: '/referral-terms'
+      fullPath: '/referral-terms'
+      preLoaderRoute: typeof ReferralTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/risk-disclosure': {
+      id: '/risk-disclosure'
+      path: '/risk-disclosure'
+      fullPath: '/risk-disclosure'
+      preLoaderRoute: typeof RiskDisclosureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CalculatorRoute: CalculatorRoute,
+  ContactRoute: ContactRoute,
+  FaqRoute: FaqRoute,
+  FeesRoute: FeesRoute,
+  HowMiningWorksRoute: HowMiningWorksRoute,
+  InvestmentTermsRoute: InvestmentTermsRoute,
+  MiningOperationsRoute: MiningOperationsRoute,
+  PrivacyRoute: PrivacyRoute,
+  ReferralTermsRoute: ReferralTermsRoute,
+  RiskDisclosureRoute: RiskDisclosureRoute,
+  TermsRoute: TermsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
