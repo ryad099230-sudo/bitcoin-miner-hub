@@ -21,7 +21,7 @@ const dict = {
     en: "Explore Bitcoin mining, calculate an illustrative investment scenario, and review the platform's mining operations, fees, and terms before creating an account.",
   },
   cta_calc: { ar: "احسب أرباحك", en: "Calculate Your Profit" },
-  cta_signup: { ar: "أنشئ حسابك", en: "Create Your Account" },
+  cta_signup: { ar: "ابدأ الآن", en: "Get Started" },
   cta_how: { ar: "كيف يعمل التعدين", en: "How Mining Works" },
   features_title: { ar: "ما تقدّمه المنصّة", en: "What the platform offers" },
   features_sub: {

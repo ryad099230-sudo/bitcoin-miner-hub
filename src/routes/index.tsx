@@ -46,8 +46,8 @@ function Index() {
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-foreground/85">{t("hero_sub")}</p>
           <div className="mt-10 flex flex-wrap gap-3">
-            <Button asChild variant="hero" size="xl"><a href="#calculator">{t("cta_calc")}</a></Button>
-            <Button asChild variant="glass" size="xl"><Link to="/auth" search={{ mode: "signup" }}>{t("cta_signup")}</Link></Button>
+            <Button asChild variant="hero" size="xl"><Link to="/auth" search={{ mode: "signup" }}>{t("cta_signup")}</Link></Button>
+            <Button asChild variant="glass" size="xl"><a href="#calculator">{t("cta_calc")}</a></Button>
             <Button asChild variant="link" size="xl"><Link to="/how-mining-works">{t("cta_how")}</Link></Button>
           </div>
         </div>
