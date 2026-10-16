@@ -4,9 +4,9 @@ import { InfoPage } from "@/components/site/InfoPage";
 export const Route = createFileRoute("/referral-terms")({
   head: () => ({
     meta: [
-      { title: "Referral Program Terms — Bitcoin Mining Investment" },
+      { title: "Referral Program Terms — Nova Invest" },
       { name: "description", content: "Single-level 1% referral commission terms." },
-      { property: "og:title", content: "Referral Program Terms — Bitcoin Mining Investment" },
+      { property: "og:title", content: "Referral Program Terms — Nova Invest" },
       { property: "og:description", content: "Single-level 1% referral commission terms." },
     ],
   }),

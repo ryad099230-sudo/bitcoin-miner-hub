@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 export type Lang = "ar" | "en";
 
 const dict = {
-  brand: { ar: "Bitcoin Mining Investment", en: "Bitcoin Mining Investment" },
+  brand: { ar: "Nova Invest", en: "Nova Invest" },
   nav_home: { ar: "الرئيسية", en: "Home" },
   nav_how: { ar: "كيف يعمل التعدين", en: "How Mining Works" },
   nav_calc: { ar: "حاسبة الأرباح", en: "Profit Calculator" },
@@ -15,13 +15,13 @@ const dict = {
   logout: { ar: "تسجيل الخروج", en: "Log out" },
   dashboard: { ar: "لوحة التحكم", en: "Dashboard" },
   admin: { ar: "الإدارة", en: "Admin" },
-  hero_title: { ar: "اكتشف عالم الاستثمار في تعدين البيتكوين", en: "Explore Bitcoin Mining Investment" },
+  hero_title: { ar: "اكتشف عالم الاستثمار في تعدين البيتكوين", en: "Explore Nova Invest" },
   hero_sub: {
     ar: "تعرّف على تعدين البيتكوين، واحسب العائد التقديري لاستثمارك، واطّلع على آلية التشغيل والرسوم والشروط قبل إنشاء حساب.",
     en: "Explore Bitcoin mining, calculate an illustrative investment scenario, and review the platform's mining operations, fees, and terms before creating an account.",
   },
   cta_calc: { ar: "احسب أرباحك", en: "Calculate Your Profit" },
-  cta_signup: { ar: "أنشئ حسابك", en: "Create Your Account" },
+  cta_signup: { ar: "ابدأ الآن", en: "Get Started" },
   cta_how: { ar: "كيف يعمل التعدين", en: "How Mining Works" },
   features_title: { ar: "ما تقدّمه المنصّة", en: "What the platform offers" },
   features_sub: {

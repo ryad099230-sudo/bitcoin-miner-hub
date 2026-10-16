@@ -4,10 +4,10 @@ import { InfoPage } from "@/components/site/InfoPage";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms of Service — Bitcoin Mining Investment" },
-      { name: "description", content: "Terms governing use of the Bitcoin Mining Investment platform." },
-      { property: "og:title", content: "Terms of Service — Bitcoin Mining Investment" },
-      { property: "og:description", content: "Terms governing use of the Bitcoin Mining Investment platform." },
+      { title: "Terms of Service — Nova Invest" },
+      { name: "description", content: "Terms governing use of the Nova Invest platform." },
+      { property: "og:title", content: "Terms of Service — Nova Invest" },
+      { property: "og:description", content: "Terms governing use of the Nova Invest platform." },
     ],
   }),
   component: () => <InfoPage page="terms" />,
