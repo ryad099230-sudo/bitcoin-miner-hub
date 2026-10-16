@@ -5,9 +5,9 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/calculator")({
   head: () => ({
     meta: [
-      { title: "Profit Calculator — Bitcoin Mining Investment" },
+      { title: "Profit Calculator — Nova Invest" },
       { name: "description", content: "Calculate an illustrative simple-interest mining investment scenario without registering." },
-      { property: "og:title", content: "Profit Calculator — Bitcoin Mining Investment" },
+      { property: "og:title", content: "Profit Calculator — Nova Invest" },
       { property: "og:description", content: "Calculate an illustrative simple-interest mining investment scenario without registering." },
     ],
   }),

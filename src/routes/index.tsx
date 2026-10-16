@@ -8,9 +8,9 @@ import hero from "@/assets/hero-mining.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Bitcoin Mining Investment — اكتشف عالم الاستثمار في تعدين البيتكوين" },
+      { title: "Nova Invest — اكتشف عالم الاستثمار في تعدين البيتكوين" },
       { name: "description", content: "Explore Bitcoin mining, calculate an illustrative investment scenario, and review operations, fees, and terms before creating an account." },
-      { property: "og:title", content: "Bitcoin Mining Investment" },
+      { property: "og:title", content: "Nova Invest" },
       { property: "og:description", content: "Explore Bitcoin mining and calculate an illustrative investment scenario before creating an account." },
     ],
   }),

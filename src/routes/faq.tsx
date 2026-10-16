@@ -6,9 +6,9 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/faq")({
   head: () => ({
     meta: [
-      { title: "FAQ — Bitcoin Mining Investment" },
+      { title: "FAQ — Nova Invest" },
       { name: "description", content: "Answers about returns, deposits, withdrawals, referrals, and risk." },
-      { property: "og:title", content: "FAQ — Bitcoin Mining Investment" },
+      { property: "og:title", content: "FAQ — Nova Invest" },
       { property: "og:description", content: "Answers about returns, deposits, withdrawals, referrals, and risk." },
     ],
   }),
