@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CalculatorRouteImport } from './routes/calculator'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FaqRouteImport } from './routes/faq'
@@ -19,12 +20,18 @@ import { Route as InvestmentTermsRouteImport } from './routes/investment-terms'
 import { Route as MiningOperationsRouteImport } from './routes/mining-operations'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ReferralTermsRouteImport } from './routes/referral-terms'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RiskDisclosureRouteImport } from './routes/risk-disclosure'
 import { Route as TermsRouteImport } from './routes/terms'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CalculatorRoute = CalculatorRouteImport.update({
@@ -72,6 +79,11 @@ const ReferralTermsRoute = ReferralTermsRouteImport.update({
   path: '/referral-terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RiskDisclosureRoute = RiskDisclosureRouteImport.update({
   id: '/risk-disclosure',
   path: '/risk-disclosure',
@@ -85,6 +97,7 @@ const TermsRoute = TermsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -94,11 +107,13 @@ export interface FileRoutesByFullPath {
   '/mining-operations': typeof MiningOperationsRoute
   '/privacy': typeof PrivacyRoute
   '/referral-terms': typeof ReferralTermsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/risk-disclosure': typeof RiskDisclosureRoute
   '/terms': typeof TermsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -108,12 +123,14 @@ export interface FileRoutesByTo {
   '/mining-operations': typeof MiningOperationsRoute
   '/privacy': typeof PrivacyRoute
   '/referral-terms': typeof ReferralTermsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/risk-disclosure': typeof RiskDisclosureRoute
   '/terms': typeof TermsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -123,6 +140,7 @@ export interface FileRoutesById {
   '/mining-operations': typeof MiningOperationsRoute
   '/privacy': typeof PrivacyRoute
   '/referral-terms': typeof ReferralTermsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/risk-disclosure': typeof RiskDisclosureRoute
   '/terms': typeof TermsRoute
 }
@@ -130,6 +148,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/calculator'
     | '/contact'
     | '/faq'
@@ -139,11 +158,13 @@ export interface FileRouteTypes {
     | '/mining-operations'
     | '/privacy'
     | '/referral-terms'
+    | '/reset-password'
     | '/risk-disclosure'
     | '/terms'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/calculator'
     | '/contact'
     | '/faq'
@@ -153,11 +174,13 @@ export interface FileRouteTypes {
     | '/mining-operations'
     | '/privacy'
     | '/referral-terms'
+    | '/reset-password'
     | '/risk-disclosure'
     | '/terms'
   id:
     | '__root__'
     | '/'
+    | '/auth'
     | '/calculator'
     | '/contact'
     | '/faq'
@@ -167,12 +190,14 @@ export interface FileRouteTypes {
     | '/mining-operations'
     | '/privacy'
     | '/referral-terms'
+    | '/reset-password'
     | '/risk-disclosure'
     | '/terms'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   CalculatorRoute: typeof CalculatorRoute
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
@@ -182,6 +207,7 @@ export interface RootRouteChildren {
   MiningOperationsRoute: typeof MiningOperationsRoute
   PrivacyRoute: typeof PrivacyRoute
   ReferralTermsRoute: typeof ReferralTermsRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   RiskDisclosureRoute: typeof RiskDisclosureRoute
   TermsRoute: typeof TermsRoute
 }
@@ -193,6 +219,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/calculator': {
@@ -258,6 +291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReferralTermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/risk-disclosure': {
       id: '/risk-disclosure'
       path: '/risk-disclosure'
@@ -277,6 +317,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   CalculatorRoute: CalculatorRoute,
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,
@@ -286,6 +327,7 @@ const rootRouteChildren: RootRouteChildren = {
   MiningOperationsRoute: MiningOperationsRoute,
   PrivacyRoute: PrivacyRoute,
   ReferralTermsRoute: ReferralTermsRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   RiskDisclosureRoute: RiskDisclosureRoute,
   TermsRoute: TermsRoute,
 }
