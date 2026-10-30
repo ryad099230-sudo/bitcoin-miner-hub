@@ -15,7 +15,7 @@ export function StatCard({ label, value, hint, tone }: { label: string; value: R
 export function Panel({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
   return (
     <section className="rounded-2xl border border-border bg-card-gradient p-5 shadow-card md:p-6">
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">{title}</h2>
         {action}
       </div>
@@ -38,13 +38,18 @@ const tones: Record<string, string> = {
   rejected: "bg-destructive/15 text-destructive", cancelled: "bg-destructive/15 text-destructive", expired: "bg-destructive/15 text-destructive", reversed: "bg-destructive/15 text-destructive", suspended: "bg-destructive/15 text-destructive",
 };
 export function StatusBadge({ s }: { s: string }) {
-  return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${tones[s] ?? "bg-warning/15 text-warning"}`}>{s}</span>;
+  const { tx } = useI18n();
+  const labels: Record<string, [string, string]> = {
+    created: ["تم إنشاء الطلب", "Request created"], awaiting_payment: ["بانتظار التحويل", "Awaiting transfer"], detected: ["تم العثور على التحويل", "Transfer detected"], confirming: ["قيد التأكيدات", "Confirming"], confirmed: ["تم تأكيد الإيداع", "Confirmed"], rejected: ["مرفوض", "Rejected"], expired: ["منتهي الصلاحية", "Expired"], active: ["نشط", "Active"], verified: ["مُتحقَّق", "Verified"], unverified: ["غير مُتحقَّق", "Unverified"], pending: ["معلّق", "Pending"], approved: ["معتمد", "Approved"], paid: ["مدفوع", "Paid"], completed: ["مكتمل", "Completed"], suspended: ["موقوف", "Suspended"], cancelled: ["ملغى", "Cancelled"], reversed: ["معكوس", "Reversed"], requested: ["تم الطلب", "Requested"], broadcast: ["تم البث", "Broadcast"], recorded: ["مسجل", "Recorded"]
+  };
+  const label = labels[s];
+  return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${tones[s] ?? "bg-warning/15 text-warning"}`}>{label ? tx(label[0], label[1]) : s}</span>;
 }
 
 export function Table({ head, rows }: { head: string[]; rows: ReactNode[][] }) {
   if (!rows.length) return <Empty />;
   return (
-    <div className="overflow-x-auto">
+    <div className="max-w-full overflow-x-auto">
       <table className="w-full text-sm">
         <thead><tr className="border-b border-border text-muted-foreground">{head.map((h) => <th key={h} className="px-3 py-2 text-start font-medium whitespace-nowrap">{h}</th>)}</tr></thead>
         <tbody>{rows.map((r, i) => <tr key={i} className="border-b border-border/50 last:border-0">{r.map((c, j) => <td key={j} className="px-3 py-2.5 whitespace-nowrap">{c}</td>)}</tr>)}</tbody>
