@@ -1,4 +1,3 @@
-TypeScript
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -200,7 +199,6 @@ function Networks() {
       <div className="space-y-4">{(data ?? []).map((n) => { const e = edit[n.id] ?? {}; const v = (k: keyof typeof n) => String(e[k as string] ?? n[k] ?? ""); const s = (k: string, val: string | boolean) => setEdit({ ...edit, [n.id]: { ...e, [k]: val } }); return (
         <div key={n.id} className="grid gap-3 rounded-xl border border-border p-4 md:grid-cols-6">
           <p className="font-semibold md:col-span-6">{n.label}</p>
-  
           <div className="space-y-1 md:col-span-3"><Label className="text-xs">{tx("عنوان الاستلام", "Receiving address")}</Label><Input dir="ltr" value={v("deposit_address")} onChange={(x) => s("deposit_address", x.target.value)} /></div>
           <div className="space-y-1"><Label className="text-xs">{tx("التأكيدات", "Confirmations")}</Label><Input dir="ltr" value={v("required_confirmations")} onChange={(x) => s("required_confirmations", x.target.value)} /></div>
           <div className="space-y-1"><Label className="text-xs">{tx("أدنى إيداع", "Min deposit")}</Label><Input dir="ltr" value={v("min_deposit")} onChange={(x) => s("min_deposit", x.target.value)} /></div>
@@ -371,4 +369,4 @@ function Audit() {
   const { tx } = useI18n();
   const { data } = useQuery({ queryKey: ["admin-audit"], queryFn: async () => (await supabase.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(300)).data ?? [] });
   return <Panel title={tx("سجل التدقيق", "Audit log")}><Table head={[tx("الإجراء", "Action"), tx("الهدف", "Target"), tx("المنفّذ", "Actor"), tx("التفاصيل", "Details"), tx("التاريخ", "Date")]} rows={(data ?? []).map((a) => [a.action, `${a.target_type}:${a.target_id?.slice(0, 8)}`, <span key="u" className="font-mono text-xs">{a.actor_id?.slice(0, 8)}</span>, <code key="d" className="text-xs">{JSON.stringify(a.details).slice(0, 80)}</code>, fmtDate(a.created_at)])} /></Panel>;
-            }
+                                              }
