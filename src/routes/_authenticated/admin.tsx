@@ -1,3 +1,4 @@
+TypeScript
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -14,7 +15,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { depositErrorMessage, transactionExplorer, validateNetworkPatch } from "@/lib/deposits";
 import { useI18n } from "@/lib/i18n";
 
-const TABS = ["overview", "users", "deposits", "withdrawals", "commissions", "networks", "settings", "mining", "audit"] as const;
+const TABS = ["overview", "users", "deposits", "withdrawals", "commissions", "networks", "payments", "settings", "mining", "audit"] as const;
 type Tab = (typeof TABS)[number];
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -34,7 +35,7 @@ function Admin() {
   if (!check && !isAdmin) return (
     <div className="container-page grid min-h-[60vh] place-items-center text-center"><div><ShieldAlert className="mx-auto size-12 text-destructive" /><h1 className="mt-4 text-2xl font-bold">{tx("غير مصرّح", "Not authorized")}</h1><p className="mt-2 text-muted-foreground">{tx("هذه الصفحة للمسؤولين فقط.", "This page is for administrators only.")}</p></div></div>
   );
-  const labels: Record<Tab, string> = { overview: tx("نظرة عامة", "Overview"), users: tx("المستخدمون", "Users"), deposits: tx("الإيداعات", "Deposits"), withdrawals: tx("السحوبات", "Withdrawals"), commissions: tx("العمولات", "Commissions"), networks: tx("الأصول والشبكات", "Assets & networks"), settings: tx("الإعدادات", "Settings"), mining: tx("التعدين", "Mining"), audit: tx("سجل التدقيق", "Audit log") };
+  const labels: Record<Tab, string> = { overview: tx("نظرة عامة", "Overview"), users: tx("المستخدمون", "Users"), deposits: tx("الإيداعات", "Deposits"), withdrawals: tx("السحوبات", "Withdrawals"), commissions: tx("العمولات", "Commissions"), networks: tx("الأصول والشبكات", "Assets & networks"), payments: tx("فحص الاتصال", "Connection checks"), settings: tx("الإعدادات", "Settings"), mining: tx("التعدين", "Mining"), audit: tx("سجل التدقيق", "Audit log") };
   return (
     <div className="container-page space-y-6 py-8">
       <h1 className="text-2xl font-bold">{tx("لوحة الإدارة", "Admin console")}</h1>
@@ -47,6 +48,7 @@ function Admin() {
       {tab === "withdrawals" && <Withdrawals />}
       {tab === "commissions" && <Commissions />}
       {tab === "networks" && <Networks />}
+      {tab === "payments" && <PaymentChecks />}
       {tab === "settings" && <Settings />}
       {tab === "mining" && <Mining />}
       {tab === "audit" && <Audit />}
@@ -198,6 +200,7 @@ function Networks() {
       <div className="space-y-4">{(data ?? []).map((n) => { const e = edit[n.id] ?? {}; const v = (k: keyof typeof n) => String(e[k as string] ?? n[k] ?? ""); const s = (k: string, val: string | boolean) => setEdit({ ...edit, [n.id]: { ...e, [k]: val } }); return (
         <div key={n.id} className="grid gap-3 rounded-xl border border-border p-4 md:grid-cols-6">
           <p className="font-semibold md:col-span-6">{n.label}</p>
+  
           <div className="space-y-1 md:col-span-3"><Label className="text-xs">{tx("عنوان الاستلام", "Receiving address")}</Label><Input dir="ltr" value={v("deposit_address")} onChange={(x) => s("deposit_address", x.target.value)} /></div>
           <div className="space-y-1"><Label className="text-xs">{tx("التأكيدات", "Confirmations")}</Label><Input dir="ltr" value={v("required_confirmations")} onChange={(x) => s("required_confirmations", x.target.value)} /></div>
           <div className="space-y-1"><Label className="text-xs">{tx("أدنى إيداع", "Min deposit")}</Label><Input dir="ltr" value={v("min_deposit")} onChange={(x) => s("min_deposit", x.target.value)} /></div>
@@ -211,6 +214,87 @@ function Networks() {
   );
 }
 
+function PaymentChecks() {
+  const { tx } = useI18n();
+  const [result, setResult] = useState<{
+    mode?: string;
+    database_changed?: boolean;
+    deposits_enabled?: boolean;
+    withdrawals_enabled?: boolean;
+    checks?: Record<string, { ok?: boolean; tip_height?: number | null; error?: string; http_status?: number }>;
+    message?: string;
+    error?: string;
+  } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const runCheck = async () => {
+    setBusy(true);
+    setResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("payment-connectivity-check", { body: {} });
+      if (error) throw error;
+      if (data?.mode !== "read_only_connectivity_check") {
+        throw new Error(data?.error || "Unexpected response");
+      }
+      setResult(data);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      setResult({ error: message });
+      toast.error(message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const Status = ({ name, item }: { name: string; item?: { ok?: boolean; tip_height?: number | null; error?: string; http_status?: number } }) => (
+    <div className="rounded-xl border border-border p-4">
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-semibold">{name}</span>
+        <StatusBadge s={item?.ok ? "connected" : "error"} />
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">
+        {item?.ok
+          ? `${tx("ارتفاع آخر كتلة", "Latest block height")}: ${item.tip_height ?? "—"}`
+          : item?.error || tx("لم ينجح الاتصال", "Connection failed")}
+      </p>
+      {item?.http_status != null && <p className="mt-1 text-xs text-muted-foreground">HTTP {item.http_status}</p>}
+    </div>
+  );
+
+  return (
+    <Panel title={tx("فحص اتصال شبكات الدفع", "Payment network connectivity")}>
+      <p className="mb-4 text-sm text-muted-foreground">
+        {tx(
+          "هذا الفحص يختبر الوصول إلى واجهات Bitcoin وTRON فقط. لا ينشئ معاملات ولا يؤكد إيداعات ولا يغيّر قاعدة البيانات.",
+          "This checks access to Bitcoin and TRON APIs only. It does not create transactions, confirm deposits, or change the database."
+        )}
+      </p>
+      <Button variant="hero" onClick={runCheck} disabled={busy}>
+        {busy ? tx("جارٍ الفحص…", "Checking…") : tx("فحص الاتصال الآن", "Check connectivity now")}
+      </Button>
+      {result && (
+        <div className="mt-4 space-y-3">
+          {result.error ? (
+            <p className="rounded-lg border border-destructive/40 p-3 text-sm text-destructive">{result.error}</p>
+          ) : (
+            <>
+              <div className="grid gap-3 md:grid-cols-2">
+                <Status name="Bitcoin" item={result.checks?.bitcoin} />
+                <Status name="TRON (USDT TRC20)" item={result.checks?.tron} />
+              </div>
+              <p className="rounded-lg border border-border p-3 text-xs text-muted-foreground">
+                {tx("وضع الفحص للقراءة فقط", "Read-only check mode")} ·
+                {tx("قاعدة البيانات لم تتغير", "Database unchanged")} ·
+                {tx("الإيداعات والسحوبات لا تزال معطّلة", "Deposits and withdrawals remain disabled")}
+              </p>
+            </>
+          )}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
 function Settings() {
   const { tx } = useI18n();
   const qc = useQueryClient();
@@ -219,7 +303,13 @@ function Settings() {
   const save = useMutation({
     mutationFn: async () => {
       const patch = { ...p };
-      for (const k of ["calculator_monthly_rate", "referral_rate"]) if (k in patch) { const n = Number(patch[k]) / 100; if (!(n >= 0 && n <= (k === "referral_rate" ? 0.1 : 0.2))) throw new Error(tx("نسبة غير صالحة", "Invalid rate")); patch[k] = String(n); }
+      for (const k of ["calculator_monthly_rate", "referral_rate"]) {
+        if (k in patch) {
+          const n = Number(patch[k]) / 100;
+          if (!(n >= 0 && n <= 0.1)) throw new Error(tx("نسبة غير صالحة", "Invalid rate"));
+          patch[k] = String(n);
+        }
+      }
       const { error } = await supabase.rpc("admin_update_settings", { _patch: patch }); if (error) throw error;
     },
     onSuccess: () => { toast.success("OK"); setP({}); qc.invalidateQueries({ queryKey: ["site_settings"] }); }, onError: rpcErr,
@@ -281,4 +371,4 @@ function Audit() {
   const { tx } = useI18n();
   const { data } = useQuery({ queryKey: ["admin-audit"], queryFn: async () => (await supabase.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(300)).data ?? [] });
   return <Panel title={tx("سجل التدقيق", "Audit log")}><Table head={[tx("الإجراء", "Action"), tx("الهدف", "Target"), tx("المنفّذ", "Actor"), tx("التفاصيل", "Details"), tx("التاريخ", "Date")]} rows={(data ?? []).map((a) => [a.action, `${a.target_type}:${a.target_id?.slice(0, 8)}`, <span key="u" className="font-mono text-xs">{a.actor_id?.slice(0, 8)}</span>, <code key="d" className="text-xs">{JSON.stringify(a.details).slice(0, 80)}</code>, fmtDate(a.created_at)])} /></Panel>;
-}
+            }
