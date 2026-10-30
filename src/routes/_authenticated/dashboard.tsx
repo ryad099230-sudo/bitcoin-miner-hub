@@ -7,6 +7,7 @@ import { AlertTriangle, ArrowDownToLine, ArrowUpFromLine, Bell, Copy, FileText, 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Deposit } from "@/components/app/Deposit";
 import { PasswordInput } from "@/components/site/PasswordInput";
 import { Empty, Loading, Panel, StatCard, StatusBadge, Table, fmtDate } from "@/components/app/ui-bits";
 import { useSiteSettings } from "@/components/site/ProfitCalculator";
@@ -30,7 +31,7 @@ function useSummary() {
 }
 function useProfile() {
   const { user } = useAuth();
-  return useQuery({ queryKey: ["profile", user?.id], enabled: !!user, queryFn: async () => { const { data, error } = await supabase.from("profiles").select("*").eq("id", user!.id).single(); if (error) throw error; return data; } });
+  return useQuery({ queryKey: ["profile", user?.id], enabled: !!user, queryFn: async () => { if (!user) throw new Error("Unauthorized"); const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single(); if (error) throw error; return data; } });
 }
 function useNetworks() {
   return useQuery({ queryKey: ["networks"], queryFn: async () => { const { data, error } = await supabase.from("supported_networks").select("*").eq("enabled", true).eq("verified", true).order("asset"); if (error) throw error; return data; } });
@@ -67,7 +68,7 @@ function Dashboard() {
               <i.icon className="size-4" />{i.label}
             </Link>
           ))}
-          <button onClick={out} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm whitespace-nowrap text-destructive hover:bg-destructive/10"><LogOut className="size-4" />{t("logout")}</button>
+          <Button variant="ghost" onClick={out} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm whitespace-nowrap text-destructive hover:bg-destructive/10"><LogOut className="size-4" />{t("logout")}</Button>
         </nav>
       </aside>
       <div className="min-w-0 space-y-6">
@@ -141,58 +142,6 @@ function LedgerTable({ rows }: { rows: LedgerRow[] }) {
   return <Table head={[tx("النوع", "Type"), tx("المبلغ", "Amount"), tx("المرجع", "Reference"), tx("التاريخ", "Date")]} rows={rows.map((r) => [r.kind, <span key="a" dir="ltr" className={Number(r.amount_usd) < 0 ? "text-destructive" : "text-success"}>{formatUSD(r.amount_usd, lang)}</span>, r.note ?? r.ref_type, fmtDate(r.created_at)])} />;
 }
 
-function Deposit() {
-  const { tx } = useI18n();
-  const qc = useQueryClient();
-  const { data: s } = useSiteSettings();
-  const { data: nets, isLoading } = useNetworks();
-  const [netId, setNetId] = useState("");
-  const [amount, setAmount] = useState("");
-  const [created, setCreated] = useState<{ reference: string; destination_address: string; expected_amount: number; asset: string; network: string } | null>(null);
-  const { data: deps } = useQuery({ queryKey: ["deposits"], queryFn: async () => (await supabase.from("deposits").select("*").order("created_at", { ascending: false }).limit(50)).data ?? [] });
-  const net = nets?.find((n) => n.id === netId);
-  const m = useMutation({
-    mutationFn: async () => { const { data, error } = await supabase.rpc("create_deposit", { _network_id: netId, _amount: Number(amount) }); if (error) throw error; return data; },
-    onSuccess: (d) => { setCreated(d as typeof created); qc.invalidateQueries({ queryKey: ["deposits"] }); toast.success(tx("تم إنشاء طلب الإيداع", "Deposit request created")); },
-    onError: (e: Error) => toast.error(e.message),
-  });
-  const available = !!s?.deposits_enabled && (nets?.length ?? 0) > 0;
-  return (
-    <>
-      <h1 className="text-2xl font-bold">{tx("الإيداع", "Deposit")}</h1>
-      <Panel title={tx("طلب إيداع جديد", "New deposit")}>
-        {isLoading ? <Loading /> : !available ? (
-          <Empty text={tx("الإيداعات غير متاحة حالياً: لم تفعّل الإدارة أي شبكة مُتحقَّق منها أو عنوان استلام بعد. لن نعرض أي عنوان محفظة غير مُتحقَّق منه.", "Deposits are not available yet: no verified network or receiving address has been enabled by the administrator. We will never show an unverified wallet address.")} />
-        ) : created ? (
-          <div className="space-y-4">
-            <p className="text-sm">{tx("أرسل المبلغ بالضبط إلى العنوان التالي على الشبكة المحددة فقط:", "Send exactly this amount to the address below, on this network only:")}</p>
-            <div className="rounded-lg border border-primary/40 bg-primary/10 p-4 font-mono text-sm break-all" dir="ltr">{created.destination_address}</div>
-            <p dir="ltr" className="font-semibold">{created.expected_amount} {created.asset} · {created.network}</p>
-            <p className="text-sm text-muted-foreground">{tx("المرجع", "Reference")}: <span className="font-mono">{created.reference}</span></p>
-            <p className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">{tx("المعاملات على الشبكة لا يمكن عكسها. الإرسال على شبكة خاطئة قد يؤدي لفقدان الأموال. يُضاف الإيداع فقط بعد التحقق على الشبكة.", "Blockchain transactions are irreversible. Sending on the wrong network may lose funds. Your deposit is credited only after on-chain verification.")}</p>
-            <Button variant="secondary" onClick={() => { setCreated(null); setAmount(""); }}>{tx("طلب جديد", "New request")}</Button>
-          </div>
-        ) : (
-          <form className="grid gap-4 md:grid-cols-2" onSubmit={(e) => { e.preventDefault(); if (!m.isPending) m.mutate(); }}>
-            <div className="space-y-2"><Label>{tx("الأصل والشبكة", "Asset & network")}</Label>
-              <select value={netId} onChange={(e) => setNetId(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" required>
-                <option value="">{tx("اختر…", "Select…")}</option>
-                {nets!.map((n) => <option key={n.id} value={n.id}>{n.label}</option>)}
-              </select>
-            </div>
-            <div className="space-y-2"><Label>{tx("المبلغ", "Amount")} {net && <span className="text-xs text-muted-foreground">({tx("الحد الأدنى", "min")} {net.min_deposit} {net.asset})</span>}</Label>
-              <Input dir="ltr" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ""))} required />
-            </div>
-            <Button type="submit" variant="hero" disabled={m.isPending || !netId || !amount} className="md:col-span-2">{m.isPending && <Loader2 className="animate-spin" />}{tx("إنشاء طلب الإيداع", "Create deposit request")}</Button>
-          </form>
-        )}
-      </Panel>
-      <Panel title={tx("سجل الإيداعات", "Deposit history")}>
-        <Table head={[tx("المرجع", "Ref"), tx("الأصل", "Asset"), tx("المبلغ", "Amount"), tx("القيمة $", "USD"), tx("الحالة", "Status"), tx("التاريخ", "Date")]} rows={(deps ?? []).map((d) => [<span key="r" className="font-mono text-xs">{d.reference}</span>, `${d.asset} · ${d.network}`, <span key="a" dir="ltr">{d.expected_amount}</span>, d.usd_value ? `$${d.usd_value}` : "—", <StatusBadge key="s" s={d.status} />, fmtDate(d.created_at)])} />
-      </Panel>
-    </>
-  );
-}
 
 function Withdraw() {
   const { tx, lang } = useI18n();
@@ -225,7 +174,7 @@ function Withdraw() {
             <div className="space-y-2"><Label>{tx("الأصل والشبكة", "Asset & network")}</Label>
               <select value={netId} onChange={(e) => setNetId(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" required>
                 <option value="">{tx("اختر…", "Select…")}</option>
-                {nets!.map((n) => <option key={n.id} value={n.id}>{n.label}</option>)}
+                {(nets ?? []).map((n) => <option key={n.id} value={n.id}>{n.label}</option>)}
               </select>
             </div>
             <div className="space-y-2"><Label>{tx("المبلغ (دولار)", "Amount (USD)")}</Label><Input dir="ltr" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ""))} /></div>
@@ -271,7 +220,7 @@ function Earnings() {
       </Panel>
       <Panel title={tx("تقارير التعدين المنشورة", "Published mining reports")}>
         {(reports ?? []).length === 0 ? <Empty text={tx("لم تُنشر أي تقارير تعدين مُتحقَّق منها بعد.", "No verified mining reports have been published yet.")} /> :
-          <Table head={[tx("الفترة", "Period"), "BTC", tx("رسوم المجمّع", "Pool fees"), tx("المجمّع", "Pool")]} rows={reports!.map((r) => [`${r.period_start} → ${r.period_end}`, r.btc_mined, r.pool_fees_btc, r.pool_name ?? "—"])} />}
+          <Table head={[tx("الفترة", "Period"), "BTC", tx("رسوم المجمّع", "Pool fees"), tx("المجمّع", "Pool")]} rows={(reports ?? []).map((r) => [`${r.period_start} → ${r.period_end}`, r.btc_mined, r.pool_fees_btc, r.pool_name ?? "—"])} />}
       </Panel>
     </>
   );
@@ -320,7 +269,7 @@ function Notifications() {
   return (
     <><h1 className="text-2xl font-bold">{tx("الإشعارات", "Notifications")}</h1>
       <Panel title={tx("كل الإشعارات", "All notifications")} action={<Button size="sm" variant="secondary" onClick={markAll}>{tx("تعليم الكل كمقروء", "Mark all read")}</Button>}>
-        {(data ?? []).length === 0 ? <Empty /> : <ul className="divide-y divide-border">{data!.map((n) => <li key={n.id} className={`py-3 ${n.read ? "opacity-60" : ""}`}><p className="font-medium">{n.title}</p><p className="text-sm text-muted-foreground">{n.body} · {fmtDate(n.created_at)}</p></li>)}</ul>}
+        {(data ?? []).length === 0 ? <Empty /> : <ul className="divide-y divide-border">{(data ?? []).map((n) => <li key={n.id} className={`py-3 ${n.read ? "opacity-60" : ""}`}><p className="font-medium">{n.title}</p><p className="text-sm text-muted-foreground">{n.body} · {fmtDate(n.created_at)}</p></li>)}</ul>}
       </Panel></>
   );
 }
@@ -331,7 +280,7 @@ function Profile() {
   const qc = useQueryClient();
   const [name, setName] = useState<string | null>(null);
   const save = useMutation({
-    mutationFn: async () => { const v = (name ?? "").trim(); if (v.length < 2 || v.length > 100) throw new Error(tx("الاسم غير صالح", "Invalid name")); const { error } = await supabase.from("profiles").update({ full_name: v }).eq("id", p!.id); if (error) throw error; },
+    mutationFn: async () => { if (!p) throw new Error("Unauthorized"); const v = (name ?? "").trim(); if (v.length < 2 || v.length > 100) throw new Error(tx("الاسم غير صالح", "Invalid name")); const { error } = await supabase.from("profiles").update({ full_name: v }).eq("id", p.id); if (error) throw error; },
     onSuccess: () => { toast.success(tx("تم الحفظ", "Saved")); qc.invalidateQueries({ queryKey: ["profile"] }); },
     onError: (e: Error) => toast.error(e.message),
   });

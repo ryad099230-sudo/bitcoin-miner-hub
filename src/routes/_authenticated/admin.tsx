@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Empty, Loading, Panel, StatCard, StatusBadge, Table, fmtDate } from "@/components/app/ui-bits";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { depositErrorMessage, transactionExplorer, validateNetworkPatch } from "@/lib/deposits";
 import { useI18n } from "@/lib/i18n";
 
 const TABS = ["overview", "users", "deposits", "withdrawals", "commissions", "networks", "settings", "mining", "audit"] as const;
@@ -28,7 +29,7 @@ function Admin() {
   const { isAdmin, user } = useAuth();
   const { tx } = useI18n();
   const { tab = "overview" } = Route.useSearch();
-  const { data: check, isLoading } = useQuery({ queryKey: ["is-admin", user?.id], enabled: !!user, queryFn: async () => (await supabase.rpc("has_role", { _user_id: user!.id, _role: "admin" })).data });
+  const { data: check, isLoading } = useQuery({ queryKey: ["is-admin", user?.id], enabled: !!user, queryFn: async () => { if (!user) return false; const { data, error } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }); if (error) throw error; return data; } });
   if (isLoading) return <Loading />;
   if (!check && !isAdmin) return (
     <div className="container-page grid min-h-[60vh] place-items-center text-center"><div><ShieldAlert className="mx-auto size-12 text-destructive" /><h1 className="mt-4 text-2xl font-bold">{tx("غير مصرّح", "Not authorized")}</h1><p className="mt-2 text-muted-foreground">{tx("هذه الصفحة للمسؤولين فقط.", "This page is for administrators only.")}</p></div></div>
@@ -100,6 +101,14 @@ function Deposits() {
   const { tx } = useI18n();
   const qc = useQueryClient();
   const { data } = useQuery({ queryKey: ["admin-deposits"], queryFn: async () => (await supabase.from("deposits").select("*").order("created_at", { ascending: false }).limit(300)).data ?? [] });
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState("");
+  const [network, setNetwork] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const profiles = useQuery({ queryKey: ["admin-deposit-names"], queryFn: async () => { const { data, error } = await supabase.from("profiles").select("id,full_name"); if (error) throw error; return data; } });
+  const name = (id: string) => profiles.data?.find(p => p.id === id)?.full_name || id.slice(0, 8);
+  const filtered = (data ?? []).filter(d => (!query || `${d.reference} ${d.tx_hash ?? ""} ${name(d.user_id)}`.toLowerCase().includes(query.toLowerCase())) && (!status || d.status === status) && (!network || `${d.asset} · ${d.network}` === network) && (!from || d.created_at.slice(0,10) >= from) && (!to || d.created_at.slice(0,10) <= to));
   const [form, setForm] = useState<Record<string, { tx: string; recv: string; usd: string; reason: string }>>({});
   const f = (id: string) => form[id] ?? { tx: "", recv: "", usd: "", reason: "" };
   const upd = (id: string, k: string, v: string) => setForm({ ...form, [id]: { ...f(id), [k]: v } });
@@ -107,11 +116,19 @@ function Deposits() {
   const reject = useMutation({ mutationFn: async (id: string) => { const r = f(id).reason.trim(); if (!r) throw new Error(tx("أدخل سبب الرفض", "Enter a rejection reason")); const { error } = await supabase.rpc("admin_reject_deposit", { _deposit_id: id, _reason: r }); if (error) throw error; }, onSuccess: () => qc.invalidateQueries(), onError: rpcErr });
   return (
     <Panel title={tx("طلبات الإيداع", "Deposit requests")}>
+      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div><Label htmlFor="deposit-search">{tx("بحث", "Search")}</Label><Input id="deposit-search" value={query} onChange={e => setQuery(e.target.value)} /></div>
+        <div><Label htmlFor="deposit-status">{tx("الحالة", "Status")}</Label><select id="deposit-status" className="h-10 w-full rounded-md border border-input bg-background px-2" value={status} onChange={e => setStatus(e.target.value)}><option value="">{tx("الكل", "All")}</option>{["created", "awaiting_payment", "detected", "confirming", "confirmed", "rejected", "expired"].map(v => <option key={v} value={v}>{v}</option>)}</select></div>
+        <div><Label htmlFor="deposit-filter-network">{tx("الشبكة", "Network")}</Label><select id="deposit-filter-network" className="h-10 w-full rounded-md border border-input bg-background px-2" value={network} onChange={e => setNetwork(e.target.value)}><option value="">{tx("الكل", "All")}</option>{Array.from(new Set((data ?? []).map(d => `${d.asset} · ${d.network}`))).map(v => <option key={v}>{v}</option>)}</select></div>
+        <div><Label htmlFor="deposit-from">{tx("من تاريخ", "From date")}</Label><Input id="deposit-from" type="date" value={from} onChange={e => setFrom(e.target.value)} /></div>
+        <div><Label htmlFor="deposit-to">{tx("إلى تاريخ", "To date")}</Label><Input id="deposit-to" type="date" min={from} value={to} onChange={e => setTo(e.target.value)} /></div>
+      </div>
       <p className="mb-4 text-sm text-muted-foreground">{tx("أكّد الإيداع فقط بعد التحقق على مستكشف الشبكة من: الأصل، الشبكة، العنوان المستلم، المبلغ، عدد التأكيدات. معرّف المعاملة فريد ولا يمكن استخدامه مرتين.", "Confirm only after verifying on a block explorer: asset, network, destination, amount, confirmations. A transaction hash is unique and cannot be credited twice.")}</p>
-      {(data ?? []).length === 0 ? <Empty /> : (
-        <div className="space-y-3">{data!.map((d) => (
+      {filtered.length === 0 ? <Empty /> : (
+        <div className="space-y-3">{filtered.map((d) => (
           <div key={d.id} className="rounded-xl border border-border p-4">
-            <div className="flex flex-wrap items-center gap-3 text-sm"><span className="font-mono">{d.reference}</span><span>{d.expected_amount} {d.asset} · {d.network}</span><StatusBadge s={d.status} /><span className="text-muted-foreground">{fmtDate(d.created_at)}</span>{d.tx_hash && <span className="font-mono text-xs">{d.tx_hash}</span>}</div>
+            <div className="flex flex-wrap items-center gap-3 text-sm"><span>{name(d.user_id)}</span><span className="font-mono">{d.reference}</span><span>{d.expected_amount} {d.asset} · {d.network}</span><StatusBadge s={d.status} /><span className="text-muted-foreground">{fmtDate(d.created_at)}</span>{d.tx_hash && <span dir="ltr" className="max-w-full break-all font-mono text-xs">{d.tx_hash}</span>}</div>
+            <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground"><span>{tx("المستلم", "Received")}: {d.received_amount ?? "—"}</span><span>USD: {d.usd_value ?? "—"}</span><span>{tx("التأكيدات", "Confirmations")}: {d.confirmations}</span><span>{tx("تاريخ التأكيد", "Confirmed at")}: {fmtDate(d.confirmed_at)}</span>{transactionExplorer(d, d.tx_hash) && <a href={transactionExplorer(d, d.tx_hash) ?? undefined} target="_blank" rel="noopener noreferrer" className="text-primary underline">{tx("مستكشف المعاملة", "Transaction explorer")}</a>}</div>
             {!["confirmed", "rejected", "expired"].includes(d.status) && (
               <div className="mt-3 grid gap-2 md:grid-cols-5">
                 <Input dir="ltr" placeholder="TX hash" value={f(d.id).tx} onChange={(e) => upd(d.id, "tx", e.target.value)} />
@@ -137,7 +154,7 @@ function Withdrawals() {
   const act = useMutation({ mutationFn: async (a: { id: string; status: "approved" | "broadcast" | "completed" | "rejected" }) => { const x = g(a.id); if (a.status === "rejected" && !x.reason.trim()) throw new Error(tx("أدخل السبب", "Enter reason")); const { error } = await supabase.rpc("admin_update_withdrawal", { _id: a.id, _status: a.status, _tx_hash: x.tx, _reason: x.reason }); if (error) throw error; }, onSuccess: () => qc.invalidateQueries(), onError: rpcErr });
   return (
     <Panel title={tx("طلبات السحب", "Withdrawal requests")}>
-      {(data ?? []).length === 0 ? <Empty /> : <div className="space-y-3">{data!.map((w) => (
+      {(data ?? []).length === 0 ? <Empty /> : <div className="space-y-3">{(data ?? []).map((w) => (
         <div key={w.id} className="rounded-xl border border-border p-4">
           <div className="flex flex-wrap items-center gap-3 text-sm"><b>${w.amount_usd}</b><span>+ ${w.fee_usd} fee</span><span>{w.asset} · {w.network}</span><span dir="ltr" className="font-mono text-xs break-all">{w.destination_address}</span><StatusBadge s={w.status} /><span className="text-muted-foreground">{fmtDate(w.created_at)}</span></div>
           {!["completed", "rejected", "cancelled"].includes(w.status) && (
@@ -174,7 +191,7 @@ function Networks() {
   const qc = useQueryClient();
   const { data } = useQuery({ queryKey: ["admin-networks"], queryFn: async () => (await supabase.from("supported_networks").select("*").order("asset")).data ?? [] });
   const [edit, setEdit] = useState<Record<string, Record<string, string | boolean>>>({});
-  const save = useMutation({ mutationFn: async (id: string) => { const { error } = await supabase.rpc("admin_update_network", { _id: id, _patch: edit[id] ?? {} }); if (error) throw error; }, onSuccess: () => { toast.success("OK"); qc.invalidateQueries({ queryKey: ["admin-networks"] }); }, onError: rpcErr });
+  const save = useMutation({ mutationFn: async (id: string) => { let patch; try { patch = validateNetworkPatch(edit[id] ?? {}); } catch { throw new Error(tx("إعدادات غير صالحة: التأكيدات عدد صحيح موجب والمبالغ غير سالبة.", "Invalid settings: confirmations must be a positive integer and amounts non-negative.")); } const { error } = await supabase.rpc("admin_update_network", { _id: id, _patch: patch }); if (error) throw error; }, onSuccess: () => { toast.success(tx("تم الحفظ", "Saved")); qc.invalidateQueries({ queryKey: ["admin-networks"] }); qc.invalidateQueries({ queryKey: ["deposit-networks"] }); qc.invalidateQueries({ queryKey: ["networks"] }); }, onError: rpcErr });
   return (
     <Panel title={tx("الأصول والشبكات وعناوين الاستلام", "Assets, networks & receiving addresses")}>
       <p className="mb-4 text-sm text-muted-foreground">{tx("لن تظهر الشبكة للمستخدمين إلا إذا كانت مفعّلة ومُتحقَّقاً منها ولها عنوان استلام. تحقق من العنوان بإرسال مبلغ اختباري صغير قبل التفعيل.", "A network appears to users only when enabled, verified, and given a receiving address. Verify the address with a small test transfer before enabling.")}</p>
@@ -188,7 +205,7 @@ function Networks() {
           <div className="space-y-1"><Label className="text-xs">{tx("رسوم السحب $", "Withdrawal fee $")}</Label><Input dir="ltr" value={v("withdrawal_fee")} onChange={(x) => s("withdrawal_fee", x.target.value)} /></div>
           <label className="flex items-center gap-2 text-sm"><Switch checked={(e.verified as boolean) ?? n.verified} onCheckedChange={(c) => s("verified", c)} />{tx("مُتحقَّق", "Verified")}</label>
           <label className="flex items-center gap-2 text-sm"><Switch checked={(e.enabled as boolean) ?? n.enabled} onCheckedChange={(c) => s("enabled", c)} />{tx("مفعّل", "Enabled")}</label>
-          <Button variant="hero" onClick={() => save.mutate(n.id)} disabled={!edit[n.id]}>{tx("حفظ", "Save")}</Button>
+          <Button variant="hero" onClick={() => save.mutate(n.id)} disabled={!edit[n.id] || save.isPending}>{tx("حفظ", "Save")}</Button>
         </div>); })}</div>
     </Panel>
   );

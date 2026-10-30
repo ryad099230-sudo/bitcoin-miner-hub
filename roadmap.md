@@ -1,4 +1,9 @@
 # Roadmap
+- [ ] Deposit verification UI, retry, localized errors and detailed history (Oct 30 request)
+- [ ] Admin deposit search/filter and network settings validation
+- [ ] Financial safeguards and targeted regression tests
+- [ ] Existing verifier integration: blocked until the claimed external function/source is accessible on the current connection
+- [ ] Verification and delivery report; GitHub sync status
 - [x] Database: ledger, deposits, withdrawals, referrals, mining, settings, audit
 - [x] Public site: landing, calculator, info pages, AR/EN
 - [ ] Rebrand to Nova Invest (CTA "ابدأ الآن" / "احسب أرباحك")
