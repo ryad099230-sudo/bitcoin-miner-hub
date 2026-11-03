@@ -19,7 +19,7 @@ export const PAGES = {
     title: { ar: "عمليات التعدين", en: "Mining Operations" },
     sections: [
       s("نموذج التشغيل", "Operating model", "تُسجَّل بيانات الأجهزة وتقارير المجمّع والمصروفات في لوحة الإدارة. لا تُعرض أي إحصاءات تشغيلية إلا بعد إدخالها من مصادر مُتحقَّق منها ونشرها.", "Equipment data, pool reports, and expenses are recorded in the admin console. No operational statistics are shown unless entered from verified sources and published."),
-      s("الفصل المحاسبي", "Accounting separation", "يُحتفظ بإجمالي الإيراد، والتكاليف التشغيلية، وصافي الإيراد، والتوزيعات الفعلية بشكل منفصل. حاسبة العائد الشهري المستهدف بنسبة 10% افتراض توضيحي ولا علاقة لها بمحرك التوزيع.", "Gross revenue, operating costs, net revenue, and actual distributions are kept separate. The 1% calculator is an illustrative assumption unrelated to the distribution engine."),
+      s("الفصل المحاسبي", "Accounting separation", "يُحتفظ بإجمالي الإيراد، والتكاليف التشغيلية، وصافي الإيراد، والتوزيعات الفعلية بشكل منفصل. حاسبة العائد الشهري المستهدف بنسبة 10% افتراض توضيحي ولا علاقة لها بمحرك التوزيع.", "Gross revenue, operating costs, net revenue, and actual distributions are kept separate. The 10% monthly calculator target is an illustrative assumption unrelated to the distribution engine."),
     ],
   },
   invest: {
