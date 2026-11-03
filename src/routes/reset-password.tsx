@@ -31,28 +31,63 @@ function ResetPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((e) => { if (e === "PASSWORD_RECOVERY") setReady(true); });
+    let active = true;
     const hash = window.location.hash;
-    if (hash.includes("error")) setReady(false);
-    supabase.auth.getSession().then(({ data: d }) => {
-      if (d.session) setReady(true);
-      else if (!hash.includes("type=recovery")) setReady(false);
+    const params = new URLSearchParams(hash.replace(/^#/, ""));
+    if (params.has("error") || params.has("error_description")) {
+      setReady(false);
+      return;
+    }
+
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!active) return;
+      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
+        setReady(true);
+      }
     });
-    return () => data.subscription.unsubscribe();
+
+    void supabase.auth.getSession()
+      .then(({ data: result, error: sessionError }) => {
+        if (!active) return;
+        if (sessionError) {
+          console.error("[Auth] Could not inspect password recovery session:", sessionError.message);
+          setReady(false);
+          return;
+        }
+        const recoveryInUrl = params.get("type") === "recovery";
+        setReady(Boolean(result.session) || recoveryInUrl);
+      })
+      .catch((sessionError: unknown) => {
+        if (!active) return;
+        console.error("[Auth] Password recovery session check failed:", sessionError);
+        setReady(false);
+      });
+
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
   }, []);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (busy) return;
     setError(null);
     const issue = passwordIssues(pw, lang);
     if (issue) return setError(issue);
     if (pw !== pw2) return setError(tx("كلمتا المرور غير متطابقتين.", "Passwords do not match."));
+
     setBusy(true);
-    const { error } = await supabase.auth.updateUser({ password: pw });
-    setBusy(false);
-    if (error) return setError(authErrorMessage(error, lang));
-    toast.success(tx("تم تحديث كلمة المرور", "Password updated"));
-    navigate({ to: "/dashboard", replace: true });
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({ password: pw });
+      if (updateError) throw updateError;
+      toast.success(tx("تم تحديث كلمة المرور", "Password updated"));
+      await navigate({ to: "/dashboard", replace: true });
+    } catch (updateError) {
+      setError(authErrorMessage(updateError, lang));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
