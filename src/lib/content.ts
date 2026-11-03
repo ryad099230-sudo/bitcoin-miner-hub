@@ -19,7 +19,7 @@ export const PAGES = {
     title: { ar: "عمليات التعدين", en: "Mining Operations" },
     sections: [
       s("نموذج التشغيل", "Operating model", "تُسجَّل بيانات الأجهزة وتقارير المجمّع والمصروفات في لوحة الإدارة. لا تُعرض أي إحصاءات تشغيلية إلا بعد إدخالها من مصادر مُتحقَّق منها ونشرها.", "Equipment data, pool reports, and expenses are recorded in the admin console. No operational statistics are shown unless entered from verified sources and published."),
-      s("الفصل المحاسبي", "Accounting separation", "يُحتفظ بإجمالي الإيراد، والتكاليف التشغيلية، وصافي الإيراد، والتوزيعات الفعلية بشكل منفصل. حاسبة 1% افتراض توضيحي ولا علاقة لها بمحرك التوزيع.", "Gross revenue, operating costs, net revenue, and actual distributions are kept separate. The 1% calculator is an illustrative assumption unrelated to the distribution engine."),
+      s("الفصل المحاسبي", "Accounting separation", "يُحتفظ بإجمالي الإيراد، والتكاليف التشغيلية، وصافي الإيراد، والتوزيعات الفعلية بشكل منفصل. حاسبة العائد الشهري المستهدف بنسبة 10% افتراض توضيحي ولا علاقة لها بمحرك التوزيع.", "Gross revenue, operating costs, net revenue, and actual distributions are kept separate. The 1% calculator is an illustrative assumption unrelated to the distribution engine."),
     ],
   },
   invest: {
@@ -54,7 +54,7 @@ export const PAGES = {
     kicker: { ar: "برنامج الإحالة", en: "Referral Program" },
     title: { ar: "شروط برنامج الإحالة", en: "Referral Program Terms" },
     sections: [
-      s("العمولة", "Commission", "عمولة لمرة واحدة بنسبة 1% (قابلة للتعديل) على المبلغ المؤكَّد المودَع من عميل أحلته مباشرة. مثال: إيداع مؤكَّد بقيمة 100$ ينتج عمولة 1$.", "A one-time 1% commission (configurable) on the confirmed deposited principal of a directly referred customer. Example: a $100 confirmed deposit yields a $1 commission."),
+      s("العمولة", "Commission", "عمولة إحالة لمرة واحدة بنسبة 10% (قابلة للتعديل) على المبلغ المؤكَّد المودَع من عميل أحلته مباشرة. مثال: إيداع مؤكَّد بقيمة 100$ ينتج عمولة 10$.", "A one-time 10% commission (configurable) on the confirmed deposited principal of a directly referred customer. Example: a $100 confirmed deposit yields a $10 commission."),
       s("مستوى واحد فقط", "Single level", "لا توجد عمولات متعددة المستويات. الإحالة الذاتية ممنوعة.", "No multi-level commissions. Self-referrals are prohibited."),
       s("الأهلية", "Eligibility", "لا تُحتسب العمولات على الإيداعات غير المؤكَّدة أو العوائد التقديرية. تمر العمولة بحالات: معلّقة، معتمدة، مدفوعة. قد تُلغى في حال الاسترداد أو عكس الإيداع أو الاحتيال.", "No commission on unconfirmed deposits or estimated returns. Commissions move through pending, approved, and paid. They may be reversed for refunds, reversed deposits, or fraud."),
     ],
@@ -90,10 +90,10 @@ export const PAGES = {
 export type PageKey = keyof typeof PAGES;
 
 export const FAQ: { q: L; a: L }[] = [
-  { q: { ar: "هل العائد 1% شهرياً مضمون؟", en: "Is the 1% monthly return guaranteed?" }, a: { ar: "لا. 1% افتراض توضيحي في الحاسبة فقط. التوزيعات الفعلية تعتمد على صافي إيرادات التعدين المتحقَّق منها وقد تكون صفراً.", en: "No. 1% is only an illustrative calculator assumption. Actual distributions depend on verified net mining revenue and may be zero." } },
+  { q: { ar: "هل العائد الشهري المستهدف 10% مضمون؟", en: "Is the 10% monthly target guaranteed?" }, a: { ar: "لا. 10% معدل مستهدف افتراضي للحاسبة فقط، وليس وعداً أو عائداً مضموناً. التوزيعات الفعلية تعتمد على صافي إيرادات التعدين المتحقَّق منها وقد تكون صفراً.", en: "No. 10% is only an illustrative calculator target, not a promise or guaranteed return. Actual distributions depend on verified net mining revenue and may be zero." } },
   { q: { ar: "ما الحد الأدنى للاستثمار؟", en: "What is the minimum investment?" }, a: { ar: "10 دولارات.", en: "$10." } },
   { q: { ar: "ما العملات المدعومة للإيداع؟", en: "Which assets can I deposit?" }, a: { ar: "البيتكوين وUSDT على الشبكات التي يفعّلها المسؤول ويتحقق منها فقط. لا تُرسل إلى شبكة غير ظاهرة في صفحة الإيداع.", en: "Bitcoin and USDT only on networks enabled and verified by the administrator. Never send on a network not shown on the deposit page." } },
   { q: { ar: "متى يُضاف الإيداع إلى رصيدي؟", en: "When is my deposit credited?" }, a: { ar: "فقط بعد التحقق من المعاملة على الشبكة (الأصل، الشبكة، العنوان، المبلغ، التأكيدات). إرسال معرّف المعاملة أو لقطة شاشة لا يكفي.", en: "Only after on-chain verification of asset, network, address, amount, and confirmations. Submitting a hash or screenshot is not enough." } },
-  { q: { ar: "كيف تعمل الإحالة؟", en: "How do referrals work?" }, a: { ar: "تحصل على عمولة لمرة واحدة 1% على الإيداع المؤكَّد لمن أحلته مباشرة.", en: "You earn a one-time 1% commission on the confirmed deposit of a customer you referred directly." } },
+  { q: { ar: "كيف تعمل الإحالة؟", en: "How do referrals work?" }, a: { ar: "تحصل على عمولة إحالة لمرة واحدة 10% من قيمة الإيداع المؤكَّد لمن أحلته مباشرة.", en: "You earn a one-time 10% referral commission on the confirmed deposit amount of a customer you referred directly." } },
   { q: { ar: "هل يمكن أن أخسر أموالي؟", en: "Can I lose money?" }, a: { ar: "نعم. راجع صفحة الإفصاح عن المخاطر.", en: "Yes. Please read the Risk Disclosure page." } },
 ];
