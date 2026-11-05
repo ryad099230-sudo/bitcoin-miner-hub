@@ -19,7 +19,7 @@ type Tab = (typeof TABS)[number];
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: z.object({ tab: z.enum(TABS).optional() }),
-  head: () => ({ meta: [{ title: "الإدارة — Nova Invest" }, { name: "description", content: "Nova Invest administration console." }, { property: "og:title", content: "Admin — Nova Invest" }, { property: "og:description", content: "Nova Invest administration console." }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "الإدارة — Bitcoin Miner Hub" }, { name: "description", content: "Bitcoin Miner Hub administration console." }, { property: "og:title", content: "Admin — Bitcoin Miner Hub" }, { property: "og:description", content: "Bitcoin Miner Hub administration console." }, { name: "robots", content: "noindex" }] }),
   component: Admin,
 });
 
