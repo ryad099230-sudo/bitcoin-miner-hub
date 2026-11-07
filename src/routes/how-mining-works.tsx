@@ -3,7 +3,7 @@ import { InfoPage } from "@/components/site/InfoPage";
 
 export const Route = createFileRoute("/how-mining-works")({
   head: () => ({
-    meta: [
+    meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, 
       { title: "How Bitcoin Mining Works — Nova Invest" },
       { name: "description", content: "Learn how Bitcoin mining works, what drives revenue, and why returns fluctuate." },
       { property: "og:title", content: "How Bitcoin Mining Works — Nova Invest" },

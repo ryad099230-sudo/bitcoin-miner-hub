@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function useSummary() {
-  return useQuery({ queryKey: ["summary"], queryFn: async () => { const { data, error } = await supabase.rpc("my_summary"); if (error) throw error; return data as Record<string, number>; } });
+  return useQuery({ queryKey: ["summary"], queryFn: async () => { const { data, error } = await supabase.rpc("my_summary"); if (error) throw error; return data as { available: number; confirmed_deposits: number; pending_deposits: number; pending_withdrawals: number; distributions: number; commissions_paid: number }; } });
 }
 function useProfile() {
   const { user } = useAuth();
@@ -59,8 +59,8 @@ function Dashboard() {
   const out = async () => { await qc.cancelQueries(); qc.clear(); await signOut(); navigate({ to: "/auth", replace: true }); };
 
   return (
-    <div className="container-page grid gap-6 py-8 lg:grid-cols-[230px_1fr]">
-      <aside className="lg:sticky lg:top-20 lg:self-start">
+    <div className="container-page grid grid-cols-1 gap-6 py-8 lg:grid-cols-[230px_minmax(0,1fr)]">
+      <aside className="min-w-0 lg:sticky lg:top-20 lg:self-start">
         <nav className="flex gap-1 overflow-x-auto rounded-2xl border border-border bg-surface p-2 lg:flex-col">
           <Link to="/" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm whitespace-nowrap text-muted-foreground hover:bg-accent"><Home className="size-4" />{t("nav_home")}</Link>
           {items.map((i) => (
@@ -229,7 +229,7 @@ function Earnings() {
 function Referrals() {
   const { tx, lang } = useI18n();
   const { data: p } = useProfile();
-  const { data: st } = useQuery({ queryKey: ["refstats"], queryFn: async () => (await supabase.rpc("my_referral_stats")).data as Record<string, number> | null });
+  const { data: st } = useQuery({ queryKey: ["refstats"], queryFn: async () => (await supabase.rpc("my_referral_stats")).data as { registrations: number; eligible: number; volume: number; pending: number; approved: number; paid: number } | null });
   const { data: com } = useQuery({ queryKey: ["commissions"], queryFn: async () => (await supabase.from("referral_commissions").select("*").order("created_at", { ascending: false })).data ?? [] });
   const url = p ? `${typeof window !== "undefined" ? window.location.origin : ""}/auth?mode=signup&ref=${p.referral_code}` : "";
   const f = (v: unknown) => formatUSD(Number(v ?? 0), lang);
@@ -308,8 +308,8 @@ function Security() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const issue = passwordIssues(pw, lang);
-    if (issue) return toast.error(issue);
-    if (pw !== pw2) return toast.error(tx("كلمتا المرور غير متطابقتين", "Passwords do not match"));
+    if (issue) { toast.error(issue); return; }
+    if (pw !== pw2) { toast.error(tx("كلمتا المرور غير متطابقتين", "Passwords do not match")); return; }
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password: pw, current_password: cur } as { password: string });
     setBusy(false);

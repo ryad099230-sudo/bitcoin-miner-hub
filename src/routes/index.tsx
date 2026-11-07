@@ -7,10 +7,10 @@ import hero from "@/assets/hero-mining.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    meta: [
-      { title: "Bitcoin Miner Hub — اكتشف عالم الاستثمار في تعدين البيتكوين" },
+    meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, 
+      { title: "Nova Invest — اكتشف عالم الاستثمار في تعدين البيتكوين" },
       { name: "description", content: "Explore Bitcoin mining, calculate an illustrative investment scenario, and review operations, fees, and terms before creating an account." },
-      { property: "og:title", content: "Bitcoin Miner Hub" },
+      { property: "og:title", content: "Nova Invest" },
       { property: "og:description", content: "Explore Bitcoin mining and calculate an illustrative investment scenario before creating an account." },
     ],
   }),
@@ -29,7 +29,7 @@ function Index() {
     { icon: Wallet, title: tx("تتبّع الاستثمار", "Investment Tracking"), desc: tx("أرصدة مستمدة من دفتر حسابات موثوق في قاعدة البيانات.", "Balances derived from a trusted database ledger."), live: true },
     { icon: ShieldCheck, title: tx("دخول آمن للحساب", "Secure Account Access"), desc: tx("تحقق بالبريد، وإعادة تعيين كلمة المرور، وجلسات محمية.", "Email verification, password reset, protected sessions."), live: true },
     { icon: ArrowLeftRight, title: tx("إيداعات العملات الرقمية", "Cryptocurrency Deposits"), desc: tx("BTC وUSDT على الشبكات المُتحقَّق منها فقط.", "BTC and USDT on verified networks only."), live: deposits && withdrawals },
-    { icon: Gift, title: tx("مكافآت الإحالة", "Referral Rewards"), desc: tx("عمولة 10% لمرة واحدة من أصل الإيداع المؤكّد للعميل المُحال مباشرة.", "One-time 10% commission on the original amount of a directly referred, confirmed deposit."), live: true },
+    { icon: Gift, title: tx("مكافآت الإحالة", "Referral Rewards"), desc: tx("عمولة 1% لمرة واحدة على الإيداعات المؤكَّدة.", "One-time 1% commission on confirmed deposits."), live: true },
     { icon: History, title: tx("سجل المعاملات", "Transaction History"), desc: tx("كل حركة مالية مسجّلة ولا يمكن تعديلها.", "Every financial movement recorded immutably."), live: true },
     { icon: Headphones, title: tx("دعم العملاء", "Customer Support"), desc: tx("مساعدة بخصوص الحساب والعمليات.", "Help with your account and operations."), live: true },
   ];

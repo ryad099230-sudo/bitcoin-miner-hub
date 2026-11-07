@@ -25,16 +25,15 @@ const DURATIONS = [1, 3, 6, 12];
 export function ProfitCalculator() {
   const { t, lang } = useI18n();
   const { data: settings } = useSiteSettings();
-  const rate = settings ? Number(settings.calculator_monthly_rate) : null;
-  const rateReady = rate !== null && Number.isFinite(rate) && rate >= 0 && rate <= 0.1;
+  const rate = Number(settings?.calculator_monthly_rate ?? 0.01);
   const min = Number(settings?.min_investment_usd ?? 10);
   const [amount, setAmount] = useState("100");
   const [months, setMonths] = useState(1);
 
   const n = Number(amount);
   const valid = amount.trim() !== "" && /^\d+(\.\d{1,2})?$/.test(amount.trim()) && n >= min && n <= MAX_INVESTMENT;
-  const result = useMemo(() => (valid && rateReady ? calculateIllustrative(amount.trim(), String(rate), months) : null), [valid, amount, rate, rateReady, months]);
-  const pct = rateReady ? (rate! * 100).toLocaleString("en-US", { maximumFractionDigits: 4 }) : "—";
+  const result = useMemo(() => (valid ? calculateIllustrative(amount.trim(), String(rate), months) : null), [valid, amount, rate, months]);
+  const pct = (rate * 100).toLocaleString("en-US", { maximumFractionDigits: 4 });
 
   const cards = [
     { label: t("calc_initial"), value: result?.initial },
@@ -77,7 +76,7 @@ export function ProfitCalculator() {
             ))}
           </div>
           <p className="text-xs text-muted-foreground">
-            {t("calc_rate")}: <span className="font-semibold text-primary">{pct}{rateReady ? "%" : ""}</span> · {t("calc_formula")}
+            {t("calc_rate")}: <span className="font-semibold text-primary">{pct}%</span> · {t("calc_formula")}
           </p>
         </div>
       </div>
@@ -95,7 +94,7 @@ export function ProfitCalculator() {
 
       <div className="mt-6 flex gap-3 rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm leading-relaxed">
         <AlertTriangle className="mt-0.5 size-5 shrink-0 text-warning" />
-        <p>{!rateReady ? (lang === "ar" ? "تعذّر تحميل معدل الحاسبة من إعدادات المنصة؛ أعد تحميل الصفحة لاحقاً. لا يتم عرض تقدير افتراضي." : "The calculator rate could not be loaded from platform settings. Please try again later; no fallback estimate is shown.") : t("calc_notice")}</p>
+        <p>{t("calc_notice")}</p>
       </div>
 
       <div className="mt-6 flex justify-center">

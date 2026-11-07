@@ -12,4 +12,5 @@
 - Keep deposit input validation and explorer selection in `src/lib/deposits.ts`; shared pure rules enable concrete safety tests.
 - Keep the deposit workflow in `src/components/app/Deposit.tsx` and use the existing connected client; never silently switch financial backends.
 - Deposit verification sends only the owned request ID and transaction hash to the existing verifier; re-read the owned database row before reflecting confirmation and refreshing balance queries.
+- Use `src/lib/deposit-verification.ts` for the testable verifier contract; only the owned persisted row establishes credit, and user-triggered submissions never start background polling.
 - Enforce confirmation prerequisites and hash uniqueness in database triggers/indexes as well as UI validation, so privileged RPC paths cannot bypass financial invariants.

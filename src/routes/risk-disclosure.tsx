@@ -3,7 +3,7 @@ import { InfoPage } from "@/components/site/InfoPage";
 
 export const Route = createFileRoute("/risk-disclosure")({
   head: () => ({
-    meta: [
+    meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, 
       { title: "Risk Disclosure — Nova Invest" },
       { name: "description", content: "Capital, market, liquidity, and regulatory risks of mining investment." },
       { property: "og:title", content: "Risk Disclosure — Nova Invest" },

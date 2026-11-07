@@ -53,6 +53,6 @@ export function validateNetworkPatch(patch: Record<string, string | boolean>) {
     if (!raw || !Number.isFinite(value) || value < 0 || (key === "required_confirmations" && (!Number.isInteger(value) || value < 1))) throw new Error("Invalid network settings");
     result[key] = value;
   }
-  if (typeof result.deposit_address === "string") result.deposit_address = result.deposit_address.trim();
+  if (typeof result['deposit_address'] === "string") result['deposit_address'] = result['deposit_address'].trim();
   return result;
 }

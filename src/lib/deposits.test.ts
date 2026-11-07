@@ -39,7 +39,7 @@ describe("Deposit safety rules", () => {
   it("requires a positive integer confirmation threshold", () => {
     expect(() => validateNetworkPatch({ required_confirmations: "0" })).toThrow();
     expect(() => validateNetworkPatch({ required_confirmations: "1.5" })).toThrow();
-    expect(validateNetworkPatch({ required_confirmations: "3" }).required_confirmations).toBe(3);
+    expect(validateNetworkPatch({ required_confirmations: "3" })['required_confirmations']).toBe(3);
   });
   it("rejects negative network fees and minimums", () => {
     for (const key of ["min_deposit", "min_withdrawal", "withdrawal_fee"]) expect(() => validateNetworkPatch({ [key]: "-1" })).toThrow();
