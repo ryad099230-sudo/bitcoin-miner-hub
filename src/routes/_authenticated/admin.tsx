@@ -85,7 +85,40 @@ function Users() {
   const qc = useQueryClient();
   const [q, setQ] = useState("");
   const { data } = useQuery({ queryKey: ["admin-users"], queryFn: async () => (await supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(500)).data ?? [] });
-  const set = useMutation({ mutationFn: async (a: { id: string; account: string; verification: string }) => { const { error } = await supabase.rpc("admin_set_account_status", { _user_id: a.id, _account: a.account, _verification: a.verification }); if (error) throw error; }, onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-users"] }), onError: rpcErr });
+  const normalizeAccount = (value: string) => {
+    const v = String(value ?? "").trim().toLowerCase();
+    if (["active", "نشط", "نشيط", "فعال"].includes(v)) return "active";
+    if (["suspended", "موقوف", "معلق", "معلّق", "معطل", "معطّل"].includes(v)) return "suspended";
+    return null;
+  };
+  const normalizeVerification = (value: string) => {
+    const v = String(value ?? "").trim().toLowerCase();
+    if (["unverified", "غير موثق", "غير موثّق", "غير متحقق", "غير متحقق منه"].includes(v)) return "unverified";
+    if (["pending", "قيد المراجعة", "بانتظار المراجعة", "معلق", "معلّق"].includes(v)) return "pending";
+    if (["verified", "موثق", "موثّق", "تم التحقق", "تم التوثيق", "متحقق"].includes(v)) return "verified";
+    if (["rejected", "مرفوض", "رفض"].includes(v)) return "rejected";
+    return null;
+  };
+  const set = useMutation({
+    mutationFn: async (a: { id: string; account: string; verification: string }) => {
+      const account = normalizeAccount(a.account);
+      const verification = normalizeVerification(a.verification);
+      if (!account || !verification) {
+        throw new Error(tx("تعذّر تحديث المستخدم: إحدى الحالتين المخزّنتين غير معروفة. حدّث الصفحة وتحقق من بيانات الحالة.", "Could not update user: one stored status is unknown. Refresh and check the user's status values."));
+      }
+      const { error } = await supabase.rpc("admin_set_account_status", {
+        _user_id: a.id,
+        _account: account,
+        _verification: verification,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(tx("تم تحديث حالة المستخدم", "User status updated"));
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    },
+    onError: rpcErr,
+  });
   const rows = (data ?? []).filter((u) => !q || `${u.email} ${u.full_name} ${u.referral_code}`.toLowerCase().includes(q.toLowerCase()));
   return (
     <Panel title={tx("المستخدمون", "Users")} action={<Input placeholder={tx("بحث…", "Search…")} value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />}>
