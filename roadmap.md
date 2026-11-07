@@ -1,14 +1,14 @@
 # Roadmap
-- [ ] Nov 7: finish free, user-triggered verify-deposit v5 flow; no polling, paid services, configuration or financial-record changes
-- [ ] Deposit verification UI, retry, localized errors and detailed history (Oct 30 request)
-- [ ] Admin deposit search/filter and network settings validation
-- [ ] Financial safeguards and targeted regression tests
+- [x] Nov 7: free user-triggered verifier UI; no polling, paid services, configuration or financial-record changes
+- [x] Deposit verification UI, retry, localized errors and detailed history (Oct 30 request)
+- [x] Admin deposit search/filter and network settings validation
+- [x] Financial confirmation safeguards and targeted regression tests (live chain/idempotency validation remains blocked below)
 - [ ] Existing verifier integration: blocked until the claimed external function/source is accessible on the current connection
-- [ ] Verification and delivery report; GitHub sync status
+- [x] Verification and delivery report; GitHub sync explicitly unverified
 - [x] Database: ledger, deposits, withdrawals, referrals, mining, settings, audit
 - [x] Public site: landing, calculator, info pages, AR/EN
-- [ ] Rebrand to Nova Invest (CTA "ابدأ الآن" / "احسب أرباحك")
-- [ ] Auth: signup/login/forgot/reset, resend verification, Arabic errors — VERIFY end-to-end and report cause (user request Oct 29)
-- [ ] User dashboard: overview, deposit, withdraw, earnings, referrals, transactions, notifications, profile/security, support
-- [ ] Admin dashboard: overview, users, deposits, withdrawals, commissions, networks, settings, mining, audit
-- [ ] Tests + docs of remaining setup
+- [x] Rebrand to Nova Invest (CTA "ابدأ الآن" / "احسب أرباحك")
+- [ ] Auth end-to-end verification — blocked by unavailable backend/session minting; existing flows preserved
+- [x] User dashboard views preserved and deposit flow extended
+- [x] Admin dashboard views preserved and deposit search extended
+- [x] Tests + docs of remaining setup
