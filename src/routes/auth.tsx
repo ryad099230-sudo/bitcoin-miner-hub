@@ -16,6 +16,7 @@ import { authErrorMessage, passwordIssues } from "@/lib/auth-errors";
 const search = z.object({
   mode: z.enum(["login", "signup", "forgot"]).optional(),
   ref: z.string().max(16).optional(),
+  confirmed: z.literal("1").optional(),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -32,7 +33,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { mode = "login", ref } = Route.useSearch();
+  const { mode = "login", ref, confirmed } = Route.useSearch();
   const { t, tx, lang } = useI18n();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -53,8 +54,8 @@ function AuthPage() {
   }, [ref]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!authLoading && user) navigate({ to: "/dashboard", replace: true });
-  }, [user, authLoading, navigate]);
+    if (!authLoading && user && !confirmed) navigate({ to: "/dashboard", replace: true });
+  }, [user, authLoading, navigate, confirmed]);
 
   const emailOk = z.string().email().safeParse(email.trim()).success;
 
@@ -80,7 +81,7 @@ function AuthPage() {
           email: email.trim(),
           password,
           options: {
-            emailRedirectTo: window.location.origin + "/dashboard",
+            emailRedirectTo: window.location.origin + "/auth?confirmed=1",
             data: { full_name: name.trim().slice(0, 100), referral_code: refCode.trim().toUpperCase().slice(0, 16) },
           },
         });
@@ -105,11 +106,24 @@ function AuthPage() {
   const resend = async () => {
     if (!sentTo) return;
     setBusy(true);
-    const { error } = await supabase.auth.resend({ type: "signup", email: sentTo, options: { emailRedirectTo: window.location.origin + "/dashboard" } });
+    const { error } = await supabase.auth.resend({ type: "signup", email: sentTo, options: { emailRedirectTo: window.location.origin + "/auth?confirmed=1" } });
     setBusy(false);
     if (error) toast.error(authErrorMessage(error, lang));
     else toast.success(tx("أُعيد إرسال الرسالة", "Email resent"));
   };
+
+  if (confirmed) {
+    return (
+      <div className="container-page grid min-h-[70vh] place-items-center py-16">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card-gradient p-8 text-center shadow-card">
+          <MailCheck className="mx-auto size-12 text-primary" />
+          <h1 className="mt-4 text-2xl font-bold">{tx("تم تأكيد بريدك الإلكتروني بنجاح", "Your email has been confirmed successfully")}</h1>
+          <p className="mt-3 text-muted-foreground">{tx("أصبح حسابك مفعّلاً الآن. يمكنك تسجيل الدخول للمتابعة.", "Your account is now active. You can sign in to continue.")}</p>
+          <Button asChild variant="hero" className="mt-6 w-full"><Link to="/auth" search={{ mode: "login" }}>{t("login")}</Link></Button>
+        </div>
+      </div>
+    );
+  }
 
   if (sentTo) {
     return (
