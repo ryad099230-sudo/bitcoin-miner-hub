@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Copy, ExternalLink, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { canRetryDeposit, depositErrorMessage, supportedDepositNetwork, transactionExplorer, validDepositAmount, validTransactionHash } from "@/lib/deposits";
+import { checkOwnedDeposit } from "@/lib/deposit-verification";
 
 type DepositRow = Database["public"]["Tables"]["deposits"]["Row"];
 
@@ -25,6 +26,8 @@ export function Deposit() {
   const [selected, setSelected] = useState<DepositRow | null>(null);
   const [hash, setHash] = useState("");
   const [feedback, setFeedback] = useState("");
+  const submitLock = useRef(false);
+  const [submittedHash, setSubmittedHash] = useState("");
   const networks = useQuery({ queryKey: ["deposit-networks", user?.id], queryFn: async () => {
     const { data, error } = await supabase.from("supported_networks").select("*").eq("enabled", true).eq("verified", true).order("asset");
     if (error) throw error;
@@ -50,9 +53,10 @@ export function Deposit() {
     return data as DepositRow;
   }, onSuccess: d => { setSelected(d); setHash(""); setFeedback(""); qc.invalidateQueries({ queryKey: ["deposits"] }); toast.success(tx("تم إنشاء طلب الإيداع", "Deposit request created")); }, onError: e => toast.error(depositErrorMessage(e, lang)) });
   const verify = useMutation({ mutationFn: async () => {
-    if (!current || !canRetryDeposit(current) || !validTransactionHash(hash)) throw new Error("invalid tx hash");
+    if (!user || !current || !canRetryDeposit(current) || !validTransactionHash(hash)) throw new Error("invalid tx hash");
+    return checkOwnedDeposit({ userId: user.id, deposit: current, txHash: hash, invoke: async body => {
     // Never trust amounts, wallet addresses or a claimed success from the browser.
-    const { data, error } = await supabase.functions.invoke("verify-deposit", { body: { deposit_id: current.id, tx_hash: hash.trim() } });
+    const { data, error } = await supabase.functions.invoke("verify-deposit", { body });
     if (error) {
       if ("context" in error && error.context instanceof Response) {
         const body = await error.context.clone().json().catch(() => null);
@@ -60,20 +64,29 @@ export function Deposit() {
       }
       throw error;
     }
-    if (data?.error || data?.success === false || data?.ok === false) throw new Error(String(data.error ?? data.message ?? "Verification failed"));
+    return data;
+    }, readOwned: async (id, userId) => {
     // Re-read the owned row; an HTTP response alone never credits or confirms it.
-    const { data: fresh, error: readError } = await supabase.from("deposits").select("*").eq("id", current.id).eq("user_id", current.user_id).single();
+    const { data: fresh, error: readError } = await supabase.from("deposits").select("*").eq("id", id).eq("user_id", userId).single();
     if (readError) throw readError;
     return fresh;
-  }, onSuccess: async d => {
+    } });
+  }, onSuccess: async ({ deposit: d, outcome }) => {
     setSelected(d); setFeedback("");
     await qc.invalidateQueries({ queryKey: ["deposits"] });
     if (d.status === "confirmed") {
       await Promise.all(["summary", "ledger", "notifications", "refstats", "commissions"].map(key => qc.invalidateQueries({ queryKey: [key] })));
       toast.success(tx("تم تأكيد الإيداع", "Deposit confirmed"));
-    } else setFeedback(tx("لم يُؤكد الإيداع بعد. يمكنك إعادة التحقق من الطلب نفسه.", "The deposit is not confirmed yet. You can recheck this same request."));
-  }, onError: e => { const message = depositErrorMessage(e, lang); setFeedback(message); toast.error(message); qc.invalidateQueries({ queryKey: ["deposits"] }); } });
-  const open = (d: DepositRow) => { setSelected(d); setHash(d.tx_hash ?? ""); setFeedback(""); };
+    } else setFeedback(outcome === "underpaid" ? depositErrorMessage("underpaid", lang) : outcome === "confirming" ? tx("تم العثور على التحويل وهو قيد التأكيدات. لم يُضف الرصيد بعد.", "Transfer found and awaiting confirmations. Balance has not been credited yet.") : tx("تم إرسال معرّف المعاملة للفحص؛ هذا لا يعني تأكيد الإيداع. يمكنك إعادة التحقق من الطلب نفسه.", "TXID submitted for checking; this does not mean the deposit is confirmed. You can recheck this request."));
+  }, onError: e => { const message = depositErrorMessage(e, lang); setFeedback(message); toast.error(message); qc.invalidateQueries({ queryKey: ["deposits"] }); }, onSettled: () => { submitLock.current = false; } });
+  const submitVerification = () => {
+    if (submitLock.current || verify.isPending || !validTransactionHash(hash)) return;
+    submitLock.current = true;
+    setSubmittedHash(hash.trim());
+    setFeedback(tx("تم إرسال معرّف المعاملة للتحقق؛ لم يُؤكد الإيداع بعد.", "TXID submitted for verification; the deposit is not confirmed yet."));
+    verify.mutate();
+  };
+  const open = (d: DepositRow) => { setSelected(d); setHash(d.tx_hash ?? ""); setSubmittedHash(""); setFeedback(""); };
   return <>
     <h1 className="text-2xl font-bold">{tx("الإيداع", "Deposit")}</h1>
     <Panel title={current ? tx("طلب الإيداع", "Deposit request") : tx("طلب إيداع جديد", "New deposit")}>
@@ -81,14 +94,16 @@ export function Deposit() {
         <div className="flex flex-wrap items-center gap-3"><span className="font-mono text-sm">{current.reference}</span><StatusBadge s={current.status} /></div>
         <div className="flex items-start gap-2"><p dir="ltr" className="min-w-0 flex-1 break-all rounded-lg border border-border bg-background p-3 font-mono text-sm">{current.destination_address}</p><Button variant="secondary" size="icon" title={tx("نسخ عنوان المحفظة", "Copy wallet address")} aria-label={tx("نسخ عنوان المحفظة", "Copy wallet address")} onClick={() => copy(current.destination_address)}><Copy /></Button></div>
         <p dir="ltr" className="font-semibold">{current.expected_amount} {current.asset} · {current.network}</p>
+        <p className="text-sm">{tx("المبلغ المستلم", "Received amount")}: <span dir="ltr">{current.received_amount ?? "—"} {current.asset}</span></p>
         <p className="text-sm text-muted-foreground">{tx("التأكيدات", "Confirmations")}: {current.confirmations} · {tx("الصلاحية", "Expires")}: {fmtDate(current.expires_at)}</p>
         <p className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">{tx("لا تُرسل أموالاً إذا كانت الإيداعات معطّلة. تأكد من الشبكة والعنوان؛ لا يُضاف رصيد قبل التحقق الفعلي.", "Do not send funds when deposits are disabled. Check the network and address; no balance is credited before actual verification.")}</p>
-        {canRetryDeposit(current) && supportedDepositNetwork(current) && <form className="space-y-3" onSubmit={e => { e.preventDefault(); if (!verify.isPending && validTransactionHash(hash)) verify.mutate(); }}>
+        {canRetryDeposit(current) && supportedDepositNetwork(current) && <form className="space-y-3" onSubmit={e => { e.preventDefault(); submitVerification(); }}>
           <Label htmlFor="deposit-tx">{tx("معرّف المعاملة TX Hash", "Transaction hash")}</Label>
-          <Input id="deposit-tx" dir="ltr" value={hash} onChange={e => setHash(e.target.value)} maxLength={64} autoComplete="off" spellCheck={false} aria-invalid={!!hash && !validTransactionHash(hash)} />
+          <Input id="deposit-tx" dir="ltr" value={hash} onChange={e => setHash(e.target.value)} disabled={verify.isPending} maxLength={64} autoComplete="off" spellCheck={false} aria-invalid={!!hash && !validTransactionHash(hash)} />
           {!!hash && !validTransactionHash(hash) && <p className="text-sm text-destructive">{tx("يلزم معرّف من 64 خانة سداسية عشرية.", "A 64-character hexadecimal hash is required.")}</p>}
           <Button type="submit" variant="hero" disabled={verify.isPending || !validTransactionHash(hash)}>{verify.isPending ? <Loader2 className="animate-spin" /> : <RefreshCw />}{tx("تحقق من الإيداع", "Verify deposit")}</Button>
         </form>}
+        {submittedHash && <p className="break-all text-xs text-muted-foreground">{tx("معرّف مُرسل للفحص", "TXID submitted for checking")}: <span dir="ltr" className="font-mono">{submittedHash}</span></p>}
         {feedback && <p role="alert" className="text-sm text-warning">{feedback}</p>}
         <Button variant="secondary" disabled={verify.isPending} onClick={() => { setSelected(null); setHash(""); setFeedback(""); }}>{tx("العودة", "Back")}</Button>
       </div> : networks.isPending ? <Loading /> : networks.error ? <p role="alert" className="text-sm text-destructive">{depositErrorMessage(networks.error, lang)}</p> : !available ? <Empty text={tx("الإيداعات غير متاحة حالياً. لم تُفعّل شبكة بعنوان استلام مُتحقَّق منه؛ لا ترسل أي أموال.", "Deposits are currently unavailable. No network with a verified receiving address is enabled; do not send funds.")} /> : <form className="grid gap-4 md:grid-cols-2" onSubmit={e => { e.preventDefault(); if (!create.isPending) create.mutate(); }}>
