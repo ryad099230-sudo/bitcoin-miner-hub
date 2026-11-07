@@ -203,8 +203,8 @@ function Networks() {
           <div className="space-y-1"><Label className="text-xs">{tx("أدنى إيداع", "Min deposit")}</Label><Input dir="ltr" value={v("min_deposit")} onChange={(x) => s("min_deposit", x.target.value)} /></div>
           <div className="space-y-1"><Label className="text-xs">{tx("أدنى سحب $", "Min withdrawal $")}</Label><Input dir="ltr" value={v("min_withdrawal")} onChange={(x) => s("min_withdrawal", x.target.value)} /></div>
           <div className="space-y-1"><Label className="text-xs">{tx("رسوم السحب $", "Withdrawal fee $")}</Label><Input dir="ltr" value={v("withdrawal_fee")} onChange={(x) => s("withdrawal_fee", x.target.value)} /></div>
-          <label className="flex items-center gap-2 text-sm"><Switch checked={(e.verified as boolean) ?? n.verified} onCheckedChange={(c) => s("verified", c)} />{tx("مُتحقَّق", "Verified")}</label>
-          <label className="flex items-center gap-2 text-sm"><Switch checked={(e.enabled as boolean) ?? n.enabled} onCheckedChange={(c) => s("enabled", c)} />{tx("مفعّل", "Enabled")}</label>
+          <label className="flex items-center gap-2 text-sm"><Switch checked={(e['verified'] as boolean) ?? n.verified} onCheckedChange={(c) => s("verified", c)} />{tx("مُتحقَّق", "Verified")}</label>
+          <label className="flex items-center gap-2 text-sm"><Switch checked={(e['enabled'] as boolean) ?? n.enabled} onCheckedChange={(c) => s("enabled", c)} />{tx("مفعّل", "Enabled")}</label>
           <Button variant="hero" onClick={() => save.mutate(n.id)} disabled={!edit[n.id] || save.isPending}>{tx("حفظ", "Save")}</Button>
         </div>); })}</div>
     </Panel>
@@ -225,7 +225,8 @@ function Settings() {
     onSuccess: () => { toast.success("OK"); setP({}); qc.invalidateQueries({ queryKey: ["site_settings"] }); }, onError: rpcErr,
   });
   if (!s) return <Loading />;
-  const val = (k: keyof typeof s, pct = false) => String(p[k as string] ?? (pct ? +(Number(s[k]) * 100).toFixed(4) : s[k] ?? ""));
+  const settings = s;
+  const val = (k: keyof typeof settings, pct = false) => String(p[k as string] ?? (pct ? +(Number(settings[k]) * 100).toFixed(4) : settings[k] ?? ""));
   const sw = (k: "deposits_enabled" | "withdrawals_enabled") => (p[k] as boolean | undefined) ?? s[k];
   return (
     <Panel title={tx("إعدادات المنصّة", "Platform settings")}>
