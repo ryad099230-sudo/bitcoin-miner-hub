@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Nov 7: finish free, user-triggered verify-deposit v5 flow; no polling, paid services, configuration or financial-record changes
 - [ ] Deposit verification UI, retry, localized errors and detailed history (Oct 30 request)
 - [ ] Admin deposit search/filter and network settings validation
 - [ ] Financial safeguards and targeted regression tests
