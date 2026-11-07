@@ -11,7 +11,7 @@ import { authErrorMessage, passwordIssues } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
-    meta: [
+    meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, 
       { title: "إعادة تعيين كلمة المرور — Nova Invest" },
       { name: "description", content: "Set a new password for your Nova Invest account." },
       { property: "og:title", content: "Reset password — Nova Invest" },

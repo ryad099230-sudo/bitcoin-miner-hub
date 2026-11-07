@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Empty, Loading, Panel, StatCard, StatusBadge, Table, fmtDate } from "@/components/app/ui-bits";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/use-auth";
 import { depositErrorMessage, transactionExplorer, validateNetworkPatch } from "@/lib/deposits";
 import { useI18n } from "@/lib/i18n";
@@ -226,7 +227,7 @@ function Settings() {
   });
   if (!s) return <Loading />;
   const settings = s;
-  const val = (k: keyof typeof settings, pct = false) => String(p[k as string] ?? (pct ? +(Number(settings[k]) * 100).toFixed(4) : settings[k] ?? ""));
+  const val = (k: keyof Database['public']['Tables']['site_settings']['Row'], pct = false) => String(p[k as string] ?? (pct ? +(Number(settings[k]) * 100).toFixed(4) : settings[k] ?? ""));
   const sw = (k: "deposits_enabled" | "withdrawals_enabled") => (p[k] as boolean | undefined) ?? s[k];
   return (
     <Panel title={tx("إعدادات المنصّة", "Platform settings")}>

@@ -3,7 +3,7 @@ import { InfoPage } from "@/components/site/InfoPage";
 
 export const Route = createFileRoute("/referral-terms")({
   head: () => ({
-    meta: [
+    meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, 
       { title: "Referral Program Terms — Nova Invest" },
       { name: "description", content: "Single-level 1% referral commission terms." },
       { property: "og:title", content: "Referral Program Terms — Nova Invest" },

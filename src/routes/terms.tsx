@@ -3,7 +3,7 @@ import { InfoPage } from "@/components/site/InfoPage";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({
-    meta: [
+    meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, 
       { title: "Terms of Service — Nova Invest" },
       { name: "description", content: "Terms governing use of the Nova Invest platform." },
       { property: "og:title", content: "Terms of Service — Nova Invest" },

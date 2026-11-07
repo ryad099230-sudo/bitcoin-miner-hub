@@ -21,7 +21,7 @@ const search = z.object({
 export const Route = createFileRoute("/auth")({
   validateSearch: search,
   head: () => ({
-    meta: [
+    meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, 
       { title: "تسجيل الدخول / إنشاء حساب — Nova Invest" },
       { name: "description", content: "Log in or create your Nova Invest account." },
       { property: "og:title", content: "Login — Nova Invest" },

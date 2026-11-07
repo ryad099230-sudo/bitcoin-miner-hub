@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function useSummary() {
-  return useQuery({ queryKey: ["summary"], queryFn: async () => { const { data, error } = await supabase.rpc("my_summary"); if (error) throw error; return data as Record<string, number>; } });
+  return useQuery({ queryKey: ["summary"], queryFn: async () => { const { data, error } = await supabase.rpc("my_summary"); if (error) throw error; return data as { available: number; confirmed_deposits: number; pending_deposits: number; pending_withdrawals: number; distributions: number; commissions_paid: number }; } });
 }
 function useProfile() {
   const { user } = useAuth();
@@ -229,7 +229,7 @@ function Earnings() {
 function Referrals() {
   const { tx, lang } = useI18n();
   const { data: p } = useProfile();
-  const { data: st } = useQuery({ queryKey: ["refstats"], queryFn: async () => (await supabase.rpc("my_referral_stats")).data as Record<string, number> | null });
+  const { data: st } = useQuery({ queryKey: ["refstats"], queryFn: async () => (await supabase.rpc("my_referral_stats")).data as { registrations: number; eligible: number; volume: number; pending: number; approved: number; paid: number } | null });
   const { data: com } = useQuery({ queryKey: ["commissions"], queryFn: async () => (await supabase.from("referral_commissions").select("*").order("created_at", { ascending: false })).data ?? [] });
   const url = p ? `${typeof window !== "undefined" ? window.location.origin : ""}/auth?mode=signup&ref=${p.referral_code}` : "";
   const f = (v: unknown) => formatUSD(Number(v ?? 0), lang);

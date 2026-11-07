@@ -3,7 +3,7 @@ import { InfoPage } from "@/components/site/InfoPage";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
-    meta: [
+    meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, 
       { title: "Contact and Support — Nova Invest" },
       { name: "description", content: "How to reach support about your account, deposits, and withdrawals." },
       { property: "og:title", content: "Contact and Support — Nova Invest" },

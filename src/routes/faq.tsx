@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/faq")({
   head: () => ({
-    meta: [
+    meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, 
       { title: "FAQ — Nova Invest" },
       { name: "description", content: "Answers about returns, deposits, withdrawals, referrals, and risk." },
       { property: "og:title", content: "FAQ — Nova Invest" },
